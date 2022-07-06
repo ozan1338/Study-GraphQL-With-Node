@@ -43,22 +43,24 @@ module.exports = {
         return result
     },
     posts(parent,args,{ db },info) {
-        //console.log(db.dummyDataPosts)
         if (!args.query) {
             if(args.Sort == true) {
                 return db.dummyDataPosts.sort((a,b) => {
                     let titleA = a.title.toLowerCase(),
-                        titleB = b.title.toLowerCase()
-
-                        if(titleA < titleB) {
-                            return -1
-                        }
-                        if(titleB > titleB) {
-                            return 1
-                        }
-                        return 0
+                    titleB = b.title.toLowerCase()
+                    
+                    if(titleA < titleB) {
+                        return -1
+                    }
+                    if(titleB > titleB) {
+                        return 1
+                    }
+                    return 0
                 })
             }
+            
+            
+            // console.log(db.dummyDataPosts)
 
             return db.dummyDataPosts
         }

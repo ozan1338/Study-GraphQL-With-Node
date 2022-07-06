@@ -153,5 +153,35 @@ module.exports = {
         // console.log(user)
 
         return user
+    },
+    updatePost(parent, args, { db }, info) {
+        const {postId,data} = args
+
+        const post = db.dummyDataPosts.find(item => item.id == postId)
+
+        if(!post) throw new Error("Post not found")
+
+        if(post.author != data.author) throw new Error("Only Author Can Update this Post!")
+
+        if (data.title) post.title = data.title
+
+        if (data.body) post.body = data.body
+
+        if (data.published) post.published = data.published
+
+        return post
+    },
+    updateComment(parent, args, { db }, info) {
+        const {commentId,data} = args
+
+        const comment = db.dummyDataComments.find(item => item.id == commentId)
+
+        if(!comment) throw new Error("Comment not found")
+
+        if(comment.author != data.author) throw new Error("Only Author Can Update this Comment!")
+
+        if(data.comment) comment.comment = data.comment
+
+        return comment
     }
 }

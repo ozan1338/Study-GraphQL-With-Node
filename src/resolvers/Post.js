@@ -9,7 +9,7 @@ module.exports = {
 
         return result
     },
-    comments(parent, args, contet, info) {
+    comments(parent, args, { db }, info) {
         return db.dummyDataComments.filter(item => item.post == parent.id)
     }
 }
