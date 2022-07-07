@@ -20,7 +20,7 @@ module.exports = {
         
         return user
     },
-    createPost(parent, args, { db }, info) {
+    createPost(parent, args, { db, pubsub }, info) {
         const UserIdExist = db.dummyDataUsers.some(item => item.id == args.data.author)
 
         if(!UserIdExist) {
@@ -37,9 +37,17 @@ module.exports = {
 
         db.dummyDataPosts.push(post)
 
+        if(args.data.published == true) pubsub.publish('post', 
+        {
+            post:{
+                mutation: "CREATED",
+                data:post
+            }
+        })
+
         return post
     },
-    createComment(parent, args, { db }, info) {
+    createComment(parent, args, { db,pubsub }, info) {
         const UserExist = db.dummyDataUsers.some(item => item.id == args.data.author)
 
         if(!UserExist){
@@ -71,6 +79,13 @@ module.exports = {
         }
 
         db.dummyDataComments.push(Comment)
+        console.log(args.data.post)
+        pubsub.publish(`comment ${args.data.post}`, {
+            comment: {
+                mutation:"CREATED",
+                data:Comment
+            }
+        })
 
         return Comment
     },
@@ -99,7 +114,7 @@ module.exports = {
 
         return deletedUser[0]
     },
-    deletePost(parent, args, { db }, info){
+    deletePost(parent, args, { db,pubsub }, info){
         const postIndex = db.dummyDataPosts.findIndex(item => item.id == args.postId)
 
         if(postIndex == -1) {
@@ -110,9 +125,22 @@ module.exports = {
 
         db.dummyDataComments = db.dummyDataComments.filter(item => item.post != args.postId)
 
+        // console.log(deletedPost[0])
+
+        if(deletedPost[0].published == true) {
+            //console.log("deletedPost",deletedPost[0])
+            pubsub.publish('post', 
+            {
+                post:{
+                    mutation: "DELETED",
+                    data:deletedPost[0]
+                }
+            })
+        }
+
         return deletedPost[0]
     },
-    deleteComment(parent,args,{ db },info) {
+    deleteComment(parent,args,{ db,pubsub },info) {
         const commentIndex = db.dummyDataComments.findIndex(item => item.id == args.commentId)
 
         if(commentIndex == -1) {
@@ -120,6 +148,13 @@ module.exports = {
         }
 
         const deletedComment = db.dummyDataComments.splice(commentIndex, 1)
+
+        pubsub.publish(`comment ${deletedComment[0].post}`,{
+            comment: {
+                mutation: "DELETED",
+                data:deletedComment[0]
+            }
+        })
 
         return deletedComment[0]
     },
@@ -154,10 +189,11 @@ module.exports = {
 
         return user
     },
-    updatePost(parent, args, { db }, info) {
+    updatePost(parent, args, { db,pubsub }, info) {
         const {postId,data} = args
 
         const post = db.dummyDataPosts.find(item => item.id == postId)
+        const originalPost = {...post}
 
         if(!post) throw new Error("Post not found")
 
@@ -167,11 +203,43 @@ module.exports = {
 
         if (data.body) post.body = data.body
 
-        if (data.published) post.published = data.published
+        if (typeof data.published == 'boolean') {
+            post.published = data.published
+
+            if(originalPost.published && !post.published) {
+                //deleted
+
+                pubsub.publish('post', {
+                    post: {
+                        mutation:'DELETED',
+                        data: originalPost
+                    }
+                })
+
+            }else if (!originalPost.published && post.published) {
+                //created
+
+                pubsub.publish('post', {
+                    post: {
+                        mutation: "CREATED",
+                        data:post
+                    }
+                })
+            }
+
+        }else {
+            //data updated
+            pubsub.publish('post',{
+                post: {
+                    mutation:"UPDATED",
+                    data: post
+                }
+            })
+        }
 
         return post
     },
-    updateComment(parent, args, { db }, info) {
+    updateComment(parent, args, { db, pubsub }, info) {
         const {commentId,data} = args
 
         const comment = db.dummyDataComments.find(item => item.id == commentId)
@@ -181,6 +249,15 @@ module.exports = {
         if(comment.author != data.author) throw new Error("Only Author Can Update this Comment!")
 
         if(data.comment) comment.comment = data.comment
+
+        console.log("updated comment",comment.post)
+
+        pubsub.publish(`comment ${comment.post}`, {
+            comment: {
+                mutation: "UPDATED",
+                data:data
+            } 
+        })
 
         return comment
     }

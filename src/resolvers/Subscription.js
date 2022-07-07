@@ -1,18 +1,20 @@
 module.exports = {
-    count: {
-        subscribe(parent, args, context, info) {
-            let {pubsub} = context
+    comment: {
+        subscribe(parent, args, { db, pubsub }, info) {
+            const {postId} = args
 
-            let count = 0
+            const post = db.dummyDataPosts.find(item => item.id == postId && item.published)
 
-            setInterval(() => {
-                count++
-                pubsub.publish('count', {
-                    count
-                })
-            }, 1000)
-
-            return pubsub.asyncIterator('count')
+            if(!post) {
+                throw new Error("Post Not Found")
+            }
+            console.log(postId)
+            return pubsub.asyncIterator(`comment ${postId}`) // comment 1 or 2 etc
+        }
+    },
+    post: {
+        subscribe(parent, args, {db,pubsub}, info) {
+            return pubsub.asyncIterator('post')
         }
     }
 }
