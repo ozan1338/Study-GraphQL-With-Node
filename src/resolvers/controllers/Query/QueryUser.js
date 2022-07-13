@@ -1,5 +1,5 @@
 let QueryUSer = {}
-const {User} = require("../../../models/")
+const {User} = require("../../../../models")
 
 QueryUSer.users = async (parent,args,{ db },info) => {
     try {

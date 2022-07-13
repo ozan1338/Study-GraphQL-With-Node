@@ -1,5 +1,5 @@
 let QueryPost = {}
-const {Post} = require("../../../models/")
+const {Post} = require("../../../../models")
 
 QueryPost.posts  = async (parent,args,{ db },info) => {
     try {
@@ -18,7 +18,7 @@ QueryPost.posts  = async (parent,args,{ db },info) => {
             order.push(...orderTitle)
         }
 
-        console.log("WHYY")
+        // console.log("WHYY")
 
         finalQuery.where = where
         finalQuery.order = order

@@ -1,5 +1,5 @@
 let QueryComment = {}
-const {Comment} = require("../../../models/")
+const {Comment} = require("../../../../models")
 
 QueryComment.comments = async (parent,args,{ db },info) => {
     try {

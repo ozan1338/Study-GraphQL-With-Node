@@ -1,25 +1,8 @@
 const uuidv4 = require('uuid')
+let MutationUser = require('./controllers/Mutation/MutationUser')
 
 module.exports = {
-    createUser(parent, args, { db }, info) {
-        // console.log(args)
-        const emailExist = db.dummyDataUsers.some(item => item.email == args.data.email)
-
-        if(emailExist) {
-            throw new Error('Email Exist')
-        }
-
-        const user = {
-            id: uuidv4.v4(),
-            name: args.data.name,
-            email: args.data.email,
-            age: args.data.age
-        }
-
-        db.dummyDataUsers.push(user)
-        
-        return user
-    },
+    ...MutationUser,
     createPost(parent, args, { db, pubsub }, info) {
         const UserIdExist = db.dummyDataUsers.some(item => item.id == args.data.author)
 
@@ -89,31 +72,6 @@ module.exports = {
 
         return Comment
     },
-    deleteUser(parent, args, { db }, info){
-        const userIndex = db.dummyDataUsers.findIndex(item => item.id == args.userId)
-
-        if(userIndex == -1) {
-            throw new Error("User not found")
-        }
-
-        const deletedUser = db.dummyDataUsers.splice(userIndex, 1)
-
-        db.dummyDataPosts = db.dummyDataPosts.filter(item => {
-            const match = item.author == args.userId
-
-            if(match) {
-                db.dummyDataComments = db.dummyDataComments.filter(element => {
-                    return element.post != item.id
-                })
-            }
-
-            return !match
-        })
-
-        db.dummyDataComments = db.dummyDataComments.filter(item => item.author != args.userId)
-
-        return deletedUser[0]
-    },
     deletePost(parent, args, { db,pubsub }, info){
         const postIndex = db.dummyDataPosts.findIndex(item => item.id == args.postId)
 
@@ -157,37 +115,6 @@ module.exports = {
         })
 
         return deletedComment[0]
-    },
-    updateUser(parent, args, { db }, info) {
-        const {userId,data} = args
-        // console.log(data.name)
-        const user = db.dummyDataUsers.find(item => item.id == args.userId)
-
-        if (!user) {
-            throw new Error("User not found")
-        }
-
-        if (typeof data.email == 'string') {
-            const emailToken = db.dummyDataUsers.some(item => item.email == data.email)
-
-            if(emailToken) {
-                throw new Error('Email taken')
-            }
-
-            user.email = data.email
-        }
-
-        if (typeof data.name == 'string') {
-            user.name = data.name
-        }
-
-        if(typeof data.age != 'undefined') {
-            user.age = data.age
-        }
-
-        // console.log(user)
-
-        return user
     },
     updatePost(parent, args, { db,pubsub }, info) {
         const {postId,data} = args
