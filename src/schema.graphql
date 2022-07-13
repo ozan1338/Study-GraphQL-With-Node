@@ -1,6 +1,4 @@
 type Query {
-    me: User!
-    post: Post!
     users(query: String,Sort: Boolean): [User!]!
     posts(query: String,Sort: Boolean): [Post!]!
     comments: [Comment!]!

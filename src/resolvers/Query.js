@@ -1,114 +1,72 @@
+const {User,Post,Comment} = require("../../models/")
 module.exports = {
-    users(parent,args,{ db },info) {
-        if (!args.query) {
-            if(args.Sort == true) {
-            return db.dummyDataUsers.sort((a,b) => {
-                    let nameA = a.name.toLowerCase(),
-                        nameB = b.name.toLowerCase()
-                    //console.log(nameA)
-                    if(nameA < nameB) {
-                        return -1;
-                    }
-                    if(nameA > nameB) {
-                        return 1;
-                    }
-                    return 0
-                })
+    async users(parent,args,{ db },info) {
+        try {
+            let where = {}
+            let order = []
+            let finalQuery = {}
+            if (args.query) {
+                where.name = args.query
             }
 
-            return db.dummyDataUsers
+            if(args.Sort == true) {
+                const sortAsc = ['name']
+                order.push(...sortAsc)
+            }
+
+            // return result
+
+            let result = []
+            finalQuery.where = where
+            finalQuery.order = order
+
+            // console.log(finalQuery)
+
+            result = await User.findAll(finalQuery)
+
+            return result
+        } catch (error) {
+            console.log(error)
         }
         
-        let result = []
-
-        result = db.dummyDataUsers.filter(item => {
-            return item.name.toLowerCase().includes(args.query.toLowerCase())
-        })
-
-        if(args.Sort == true) {
-            return result.sort((a,b) => {
-                let nameA = a.name.toLowerCase(),
-                    nameB = b.name.toLowerCase()
-                //console.log(nameA)
-                if(nameA < nameB) {
-                    return -1;
-                }
-                if(nameA > nameB) {
-                    return 1;
-                }
-                return 0
-            })
-        }
-
-        return result
     },
-    posts(parent,args,{ db },info) {
-        if (!args.query) {
-            if(args.Sort == true) {
-                return db.dummyDataPosts.sort((a,b) => {
-                    let titleA = a.title.toLowerCase(),
-                    titleB = b.title.toLowerCase()
-                    
-                    if(titleA < titleB) {
-                        return -1
-                    }
-                    if(titleB > titleB) {
-                        return 1
-                    }
-                    return 0
-                })
+    async posts(parent,args,{ db },info) {
+        try {
+            let where = {}
+            let order = []
+            let finalQuery = {}
+
+
+            if (args.query) {
+                where.title = args.query
             }
             
-            
-            // console.log(db.dummyDataPosts)
+    
+            if(args.Sort == true) {
+                const orderTitle = ['title']
+                order.push(...orderTitle)
+            }
+    
+            console.log("WHYY")
 
-            return db.dummyDataPosts
+            finalQuery.where = where
+            finalQuery.order = order
+            // console.log(finalQuery)
+
+            const result = await Post.findAll(finalQuery)
+            // console.log(result)
+    
+            return result
+        } catch (error) {
+            console.log(error)
         }
-        
-        let result = []
-
-        result = db.dummyDataPosts.filter(item => {
-            return item.title.toLowerCase().includes(args.query.toLowerCase())
-        })
-
-        if(args.Sort == true) {
-            return result.sort((a,b) => {
-                let titleA = a.title.toLowerCase(),
-                    titleB = b.title.toLowerCase()
-
-                    if(titleA < titleB) {
-                        return -1
-                    }
-                    if(titleB > titleB) {
-                        return 1
-                    }
-                    return 0
-            })
-        }
-
-        console.log("WHYY")
-
-        return result
     },
-    me() {
-        user = {
-            id: 'abc123',
-            name: 'Ozan',
-            email: 'ozan@mail.com',
-            age: 17
+    async comments(parent,args,{ db },info) {
+        try {
+            let comment = await Comment.findAll()
+        return comment
+        } catch (error) {
+            console.log(error)
         }
-        return user
-    },
-    post() {
-        post = {
-            id: '1122',
-            title: 'Study',
-            body: 'This is Body',
-            published: true
-        }
-        return post
-    },
-    comments(parent,args,{ db },info) {
-        return db.dummyDataComments
     }
 }
