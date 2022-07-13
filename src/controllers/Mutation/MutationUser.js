@@ -1,5 +1,5 @@
 const uuidv4 = require('uuid')
-const {User,Comment,Post} = require("../../../../models")
+const {User,Comment,Post} = require("../../../models")
 let MutationUser = {}
 
 const deleteRow = async(id) => {

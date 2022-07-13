@@ -1,5 +1,5 @@
 let QueryPost = {}
-const {Post} = require("../../../../models")
+const {Post} = require("../../../models/")
 
 QueryPost.posts  = async (parent,args,{ db },info) => {
     try {

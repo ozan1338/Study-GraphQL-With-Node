@@ -1,5 +1,5 @@
 const uuidv4 = require('uuid')
-let MutationUser = require('./controllers/Mutation/MutationUser')
+let MutationUser = require('../controllers/Mutation/MutationUser')
 
 module.exports = {
     ...MutationUser,
