@@ -18,8 +18,8 @@ module.exports = {
                 nest:true,
                 raw:true
             })
-            console.log(">>>>><<<",parent.authorId)
-            console.log("HAHAHAHAHA", author)
+            // console.log(">>>>><<<",parent.authorId)
+            // console.log("HAHAHAHAHA", author)
             return author
         } catch (error) {
             // console.log(error)
