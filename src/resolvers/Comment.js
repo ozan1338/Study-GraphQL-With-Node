@@ -1,8 +1,23 @@
+const {User,Comment,Post} = require("../../models")
+
 module.exports = {
-    author(parent, args, { db }, info) {
-        return db.dummyDataUsers.find(item => item.id == parent.author)
+    async author(parent, args, { db }, info) {
+        const user = await User.findOne({
+            where:{
+                id:parent.userId
+            }
+        })
+        // return db.dummyDataUsers.find(item => item.id == parent.author)
+        return user
     },
-    post(parent, args, { db }, info) {
-        return db.dummyDataPosts.find(item => item.id == parent.post) 
+    async post(parent, args, { db }, info) {
+        // return db.dummyDataPosts.find(item => item.id == parent.post) 
+        const post = await Post.findOne({
+            where:{
+                id:parent.postId
+            }
+        })
+
+        return post
     }
 }

@@ -122,7 +122,8 @@ service.deleteRowComment = async(id,result) => {
     result.isExist = await Comment.destroy({
         where:{
             id
-        }
+        },
+        returning:true
     })
 
     return result

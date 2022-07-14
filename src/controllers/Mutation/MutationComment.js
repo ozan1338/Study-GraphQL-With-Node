@@ -1,65 +1,84 @@
 let MutationComment = {}
+const {User,Comment,Post} = require("../../../models")
+const {Op} = require('sequelize')
+const helper = require("../../helper/index")
 
-MutationComment.createComment = (parent, args, { db,pubsub }, info) => {
-    const UserExist = db.dummyDataUsers.some(item => item.id == args.data.author)
+MutationComment.createComment = async(parent, args, { db,pubsub }, info) => {
+    // const UserExist = db.dummyDataUsers.some(item => item.id == args.data.author)
+    const UserExist = await User.count({
+        where:{
+            id:args.data.userId
+        }
+    })
 
-    if(!UserExist){
+    // console.log(UserAndPostExist)
+
+    if(UserExist == 0){
         throw new Error("User Not Exist")
     }
 
-    let PostIsExist = false
+    // let PostIsExist = false
 
-    for(let item of db.dummyDataPosts){
-        if(item.id == args.data.post){
-            if(item.published != true){
-                throw new Error("Post Has Not Been Published")
-            }else {
-                PostIsExist = true
-            }
+    const PostIsExist = await Post.count({
+        where:{
+            [Op.and]:[
+                {},
+                {id:args.data.postId},
+                {published:{
+                    [Op.ne]:false
+                }}
+            ]
         }
-    }
+    })
 
-    if(!PostIsExist) {
+    // console.log(PostIsExist)
+
+    if(PostIsExist == 0) {
         throw new Error("Post Is Not Exist")
     }
     // console.log(args)
 
-    const Comment = {
-        id:uuidv4.v4(),
+    const data = {
         comment: args.data.comment,
-        author: args.data.author,
-        post: args.data.post
+        userId: args.data.userId,
+        postId: args.data.postId
     }
 
-    db.dummyDataComments.push(Comment)
-    console.log(args.data.post)
-    pubsub.publish(`comment ${args.data.post}`, {
+    const comment = await Comment.create({...data,raw:true,nest:true})
+
+    // db.dummyDataComments.push(Comment)
+    console.log(args.data.postId)
+    pubsub.publish(`comment ${args.data.postId}`, {
         comment: {
             mutation:"CREATED",
-            data:Comment
+            data:comment
         }
     })
 
-    return Comment
+    // console.log(comment.dataValues,"come")
+
+    return comment.dataValues
 }
 
-MutationComment.deleteComment = (parent,args,{ db,pubsub },info) => {
-    const commentIndex = db.dummyDataComments.findIndex(item => item.id == args.commentId)
+MutationComment.deleteComment = async (parent,args,{ db,pubsub },info) => {
+    // const commentIndex = db.dummyDataComments.findIndex(item => item.id == args.commentId)
+    const deletedComment = await helper.deleteRow(args.commentId,"Comment")
+    console.log(deletedComment)
 
-    if(commentIndex == -1) {
+    if(deletedComment.isExist == 0) {
         throw new Error("Comment not found")
     }
 
-    const deletedComment = db.dummyDataComments.splice(commentIndex, 1)
+    // const deletedComment = db.dummyDataComments.splice(commentIndex, 1)
 
-    pubsub.publish(`comment ${deletedComment[0].post}`,{
+    pubsub.publish(`comment ${deletedComment.postId}`,{
         comment: {
             mutation: "DELETED",
-            data:deletedComment[0]
+            data:deletedComment.data
         }
     })
 
-    return deletedComment[0]
+    return deletedComment.data
 }
 
 MutationComment.updateComment = (parent, args, { db, pubsub }, info) => {
