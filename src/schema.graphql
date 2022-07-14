@@ -38,25 +38,25 @@ input UpdatePostInput {
     title:String,
     body:String,
     published:Boolean,
-    author:ID!
+    authorId:ID!
 }
 
 input UpdateCommentInput {
     comment:String,
-    author:ID!
+    userId:ID!
 }
 
 input CreatePostInput {
     title:String!,
     body:String!,
     published:Boolean!,
-    author:ID!
+    authorid:ID!
 }
 
 input CreateCommentInput {
     comment:String!,
-    author:ID!,
-    post:ID!
+    userId:ID!,
+    postId:ID!
 }
 
 type User {

@@ -10,7 +10,7 @@ module.exports = {
 
         // return result
         try {
-            console.log(parent)
+            // console.log(parent)
             let author = await User.findOne({
                 where: {
                     id: parent.authorId

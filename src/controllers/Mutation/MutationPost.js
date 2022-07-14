@@ -1,22 +1,30 @@
 const {User,Comment,Post} = require("../../../models")
+const helpers = require('../../helper/index')
 let MutationPost = {}
 
-MutationPost.createPost = (parent, args, { db, pubsub }, info) => {
-    const UserIdExist = db.dummyDataUsers.some(item => item.id == args.data.author)
+MutationPost.createPost = async(parent, args, { db, pubsub }, info) => {
+    // const UserIdExist = db.dummyDataUsers.some(item => item.id == args.data.author)
+
+    const UserIdExist = await User.findOne({
+        where:{
+            id:args.data.author
+        }
+    })
 
     if(!UserIdExist) {
         throw new Error('User Not Exist')
     }
 
     const post = {
-        id: uuidv4.v4(),
         title: args.data.title,
         body: args.data.body,
         published: args.data.published,
-        author: args.data.author
+        authorId: args.data.author
     }
 
-    db.dummyDataPosts.push(post)
+    const result = await Post.create({...post,raw:true,nest:true})
+
+    // db.dummyDataPosts.push(post)
 
     if(args.data.published == true) pubsub.publish('post', 
     {
@@ -26,23 +34,27 @@ MutationPost.createPost = (parent, args, { db, pubsub }, info) => {
         }
     })
 
-    return post
+    return result.dataValues
 }
 
-MutationPost.deletePost = (parent, args, { db,pubsub }, info) => {
-    const postIndex = db.dummyDataPosts.findIndex(item => item.id == args.postId)
+MutationPost.deletePost = async (parent, args, { db,pubsub }, info) => {
+    // const postIndex = db.dummyDataPosts.findIndex(item => item.id == args.postId)
 
-    if(postIndex == -1) {
+    const result = await helpers.deleteRow(args.postId,'Post')
+
+    // console.log(result)
+
+    if(result.isExist == 0) {
         throw new Error("Post Not Found")
     }
 
-    const deletedPost = db.dummyDataPosts.splice(postIndex, 1)
+    // const deletedPost = db.dummyDataPosts.splice(postIndex, 1)
 
-    db.dummyDataComments = db.dummyDataComments.filter(item => item.post != args.postId)
+    // db.dummyDataComments = db.dummyDataComments.filter(item => item.post != args.postId)
 
     // console.log(deletedPost[0])
 
-    if(deletedPost[0].published == true) {
+    if(result.data.published == true) {
         //console.log("deletedPost",deletedPost[0])
         pubsub.publish('post', 
         {
@@ -53,58 +65,53 @@ MutationPost.deletePost = (parent, args, { db,pubsub }, info) => {
         })
     }
 
-    return deletedPost[0]
+    return result.data
 }
 
-MutationPost.updatePost = (parent, args, { db,pubsub }, info) => {
+MutationPost.updatePost = async(parent, args, { db,pubsub }, info) => {
     const {postId,data} = args
 
-    const post = db.dummyDataPosts.find(item => item.id == postId)
-    const originalPost = {...post}
+    // const post = db.dummyDataPosts.find(item => item.id == postId)
+    // const originalPost = {...post}
 
-    if(!post) throw new Error("Post not found")
+    const result = await helpers.updatedRow(postId,data,'Post')
+    // console.log(result)
 
-    if(post.author != data.author) throw new Error("Only Author Can Update this Post!")
-
-    if (data.title) post.title = data.title
-
-    if (data.body) post.body = data.body
-
-    if (typeof data.published == 'boolean') {
-        post.published = data.published
-
-        if(originalPost.published && !post.published) {
-            //deleted
-
-            pubsub.publish('post', {
-                post: {
-                    mutation:'DELETED',
-                    data: originalPost
-                }
-            })
-
-        }else if (!originalPost.published && post.published) {
-            //created
-
-            pubsub.publish('post', {
-                post: {
-                    mutation: "CREATED",
-                    data:post
-                }
-            })
-        }
-
-    }else {
-        //data updated
-        pubsub.publish('post',{
-            post: {
-                mutation:"UPDATED",
-                data: post
-            }
-        })
+    if(result.isExist == 0) {
+        throw new Error("Post Not Found")
     }
 
-    return post
-},
+    // if(result.data.post.publish == 'boolean') {
+    //     console.log("HAI")
+    // }
+
+    if(!result.newValue.published && result.prevValue.published) {
+        console.log('deleted')
+                pubsub.publish('post', {
+                    post: {
+                        mutation:'DELETED',
+                        data: result.prevValue
+                    }
+                })
+    } else if(result.newValue.published && !result.prevValue.published){
+        console.log('created')
+                pubsub.publish('post', {
+                    post: {
+                        mutation: "CREATED",
+                        data:result.newValue
+                    }
+                })
+    } else {
+        console.log('updated')
+            pubsub.publish('post',{
+                post: {
+                    mutation:"UPDATED",
+                    data: result.newValue
+                }
+            })
+    }
+
+    return result.newValue
+}
 
 module.exports = MutationPost
