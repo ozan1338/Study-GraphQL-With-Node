@@ -1,13 +1,14 @@
 let QueryPost = {}
 const {Post} = require("../../../models/")
 
-QueryPost.posts  = async (parent,args,{ db },info) => {
+QueryPost.posts  = async (parent,args,{ db,req },info) => {
     try {
         let where = {}
         let order = []
         let finalQuery = {}
 
-        console.log(info)
+        console.log(req.headers)
+        // console.log(db)
 
         if (args.query) {
             where.title = args.query

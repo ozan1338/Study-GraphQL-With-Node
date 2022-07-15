@@ -5,5 +5,6 @@ let QueryPost = require('../controllers/Query/QueryPost')
 module.exports = {
     ...QueryComment,
     ...QueryPost,
-    ...QueryUser
+    ...QueryUser,
+    showHeader: (_, { headerName }, ctx) => ctx.request.get(headerName),
 }

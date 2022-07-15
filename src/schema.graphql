@@ -2,6 +2,7 @@ type Query {
     users(query: String,Sort: Boolean): [User!]!
     posts(query: String,Sort: Boolean): [Post!]!
     comments: [Comment!]!
+    showHeader(headerName: String): String!
 }
 
 type Mutation {
