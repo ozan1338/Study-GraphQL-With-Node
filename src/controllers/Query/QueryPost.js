@@ -7,6 +7,7 @@ QueryPost.posts  = async (parent,args,{ db },info) => {
         let order = []
         let finalQuery = {}
 
+        console.log(info)
 
         if (args.query) {
             where.title = args.query

@@ -1,5 +1,6 @@
 const {User,Comment,Post} = require("../../models")
 const service = {}
+const {Op} = require('sequelize')
 
 service.updatedRowUser = async(id,data,result) => {
     result.isExist = await User.update({...data},{
@@ -59,15 +60,25 @@ service.updatedRowPost = async(id,data,result) => {
 }
 
 service.updatedRowComment = async(id,data,result) => {
-    result.isExist = await Comment.update({...data},{
-        where:{
-            id
-        }
-    })
 
     result.data = await Comment.findOne({
         where:{
             id
+        }
+    }).then(ress => {
+        return ress.dataValues
+    })
+
+    if(result.data.userId != data.userId){
+        throw new Error("Only User Who Comment Can Update This Comment!")
+    }
+
+    result.isExist = await Comment.update({...data},{
+        where:{
+            [Op.and]:[
+                {id:id},
+                {userId:data.userId}
+            ]
         }
     })
 

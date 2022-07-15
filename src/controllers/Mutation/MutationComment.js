@@ -63,7 +63,7 @@ MutationComment.createComment = async(parent, args, { db,pubsub }, info) => {
 MutationComment.deleteComment = async (parent,args,{ db,pubsub },info) => {
     // const commentIndex = db.dummyDataComments.findIndex(item => item.id == args.commentId)
     const deletedComment = await helper.deleteRow(args.commentId,"Comment")
-    console.log(deletedComment)
+    // console.log(deletedComment)
 
     if(deletedComment.isExist == 0) {
         throw new Error("Comment not found")
@@ -81,27 +81,35 @@ MutationComment.deleteComment = async (parent,args,{ db,pubsub },info) => {
     return deletedComment.data
 }
 
-MutationComment.updateComment = (parent, args, { db, pubsub }, info) => {
+MutationComment.updateComment = async(parent, args, { db, pubsub }, info) => {
     const {commentId,data} = args
 
-    const comment = db.dummyDataComments.find(item => item.id == commentId)
+    const updatedComment = await helper.updatedRow(commentId,data,"Comment")
+    console.log(updatedComment)
 
-    if(!comment) throw new Error("Comment not found")
+    // const comment = db.dummyDataComments.find(item => item.id == commentId)
+    // const comment = await Comment.findOne({
+    //     where:{
+    //         id:commentId
+    //     }
+    // })
 
-    if(comment.author != data.author) throw new Error("Only Author Can Update this Comment!")
+    // if(!comment) throw new Error("Comment not found")
 
-    if(data.comment) comment.comment = data.comment
+    // if(comment.authorId != data.author) throw new Error("Only Author Can Update this Comment!")
 
-    console.log("updated comment",comment.post)
+    // if(data.comment) comment.comment = data.comment
 
-    pubsub.publish(`comment ${comment.post}`, {
+    // console.log("updated comment",comment.post)
+
+    pubsub.publish(`comment ${updatedComment.postId}`, {
         comment: {
             mutation: "UPDATED",
-            data:data
+            data:updatedComment.data
         } 
     })
 
-    return comment
+    return updatedComment.data
 }
 
 module.exports = MutationComment
