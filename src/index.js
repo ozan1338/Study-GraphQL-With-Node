@@ -10,6 +10,8 @@ const Post = require("./resolvers/Post")
 const Comment = require("./resolvers/Comment")
 const Subscription = require("./resolvers/Subscription")
 
+require('dotenv').config()
+
 const pubsub = new PubSub()
 
 //Query = seperti get dalam rest Api

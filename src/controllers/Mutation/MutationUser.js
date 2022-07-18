@@ -1,6 +1,8 @@
 const uuidv4 = require('uuid')
 const {User,Comment,Post} = require("../../../models")
 let MutationUser = {}
+let bcrypt = require("bcrypt")
+let jwt = require("jsonwebtoken")
 
 const deleteRow = async(id) => {
 
@@ -43,6 +45,35 @@ const updatedRow = async(id,data) => {
     return {result,isExist:isExist[0]}
 }
 
+MutationUser.login = async(parent, args, context, info) => {
+    const {email, password} = args.data
+
+    // console.log(email)
+
+    const user = await User.findOne({
+        where:{
+            email
+        }
+    })
+
+    if(!user) {
+        throw new Error("User Not Found")
+    }
+
+    const isMatch = await bcrypt.compare(password, user.password)
+
+    if(!isMatch) {
+        throw new Error("Password not match")
+    }
+
+    const token = jwt.sign({userId: user.dataValues.id}, process.env.SECRET)
+
+    return {
+        user,
+        token
+    }
+}
+
 MutationUser.createUser = async (parent, args, { db }, info) => {
     // console.log(args)
     // const emailExist = db.dummyDataUsers.some(item => item.email == args.data.email)
@@ -56,18 +87,30 @@ MutationUser.createUser = async (parent, args, { db }, info) => {
         throw new Error('Email Exist')
     }
 
+    if(args.data.password.length < 4) {
+        throw new Error('Password must be 4 character or longer')
+    }
+
+    let password = await bcrypt.hash(args.data.password, 10)
+
     const user = {
         name: args.data.name,
         email: args.data.email,
-        age: args.data.age
+        age: args.data.age,
+        password
     }
 
     // db.dummyDataUsers.push(user)
     const result = await User.create({...user,raw:true,nest:true})
 
     // console.log(result.dataValues)
+
+    const token = jwt.sign({userId: result.dataValues.id}, process.env.SECRET)
     
-    return result.dataValues
+    return {
+        user: result.dataValues,
+        token
+    }
 }
 
 MutationUser.deleteUser = async(parent, args, { db }, info) => {

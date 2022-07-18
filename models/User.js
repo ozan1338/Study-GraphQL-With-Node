@@ -18,6 +18,10 @@ module.exports = function(sequelize, DataTypes) {
     age: {
       type: DataTypes.INTEGER,
       allowNull: false
+    },
+    password: {
+      type: DataTypes.STRING,
+      allowNull: false
     }
   }, {
     sequelize,

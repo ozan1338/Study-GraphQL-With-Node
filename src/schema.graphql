@@ -6,7 +6,8 @@ type Query {
 }
 
 type Mutation {
-    createUser(data: CreateUserInput): User!
+    login(data: LoginUser): AuthPayload!
+    createUser(data: CreateUserInput): AuthPayload!
     createPost(data: CreatePostInput): Post!
     createComment(data: CreateCommentInput): Comment!
     deleteUser(userId: ID!): User!
@@ -23,10 +24,16 @@ type Subscription {
     post: PostSubscriptionPayload!
 }
 
+input LoginUser {
+    email: String!
+    password: String!
+}
+
 input CreateUserInput {
     name:String!,
     email:String!,
     age:Int
+    password:String!
 }
 
 input UpdateUserInput {
@@ -67,6 +74,7 @@ type User {
     age: Int
     posts: [Post!]!
     comments: [Comment!]!
+    password: String
 }
 
 type Post {
@@ -99,4 +107,9 @@ type PostSubscriptionPayload {
 type CommentSubsciptionPayload {
     mutation: MutationType!
     data: Comment!
+}
+
+type AuthPayload {
+    user: User!
+    token: String!
 }

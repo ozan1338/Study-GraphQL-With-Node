@@ -10,7 +10,10 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
+    "bcrypt": "^5.0.1",
+    "dotenv": "^16.0.1",
     "graphql-yoga": "^1.14.10",
+    "jsonwebtoken": "^8.5.1",
     "pg": "^8.7.3",
     "sequelize": "^6.21.2",
     "sequelize-auto": "^0.8.8",
