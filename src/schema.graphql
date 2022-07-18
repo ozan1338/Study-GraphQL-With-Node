@@ -3,6 +3,8 @@ type Query {
     posts(query: String,Sort: Boolean): [Post!]!
     comments: [Comment!]!
     showHeader(headerName: String): String!
+    post(postId: ID!): Post!
+    me: User!
 }
 
 type Mutation {

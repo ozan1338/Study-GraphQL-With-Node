@@ -1,5 +1,6 @@
 let QueryUSer = {}
 const {User} = require("../../../models")
+const { getUserId } = require("../../utils/getUserId")
 
 QueryUSer.users = async (parent,args,{ db },info) => {
     try {
@@ -29,6 +30,18 @@ QueryUSer.users = async (parent,args,{ db },info) => {
     } catch (error) {
         console.log(error)
     }
+}
+
+QueryUSer.me = async(parent,args,{ req,db },info) => {
+    const userId = getUserId(req)
+
+    const user = await User.findOne({
+        where:{
+            id:userId
+        }
+    })
+
+    return user
 }
 
 module.exports = QueryUSer
