@@ -20,7 +20,7 @@ service.updatedRowUser = async(id,data,result) => {
     return result
 }
 
-service.updatedRowPost = async(id,data,result) => {
+service.updatedRowPost = async(id,data,result,userId) => {
 
     let newValue
 
@@ -35,7 +35,7 @@ service.updatedRowPost = async(id,data,result) => {
         return ress.dataValues
     })
 
-    if(result.prevValue.authorId != data.authorId){
+    if(result.prevValue.authorId != userId){
         throw new Error("Only Author Can Update This Post!")
     }
 
@@ -59,7 +59,7 @@ service.updatedRowPost = async(id,data,result) => {
     return result.Post
 }
 
-service.updatedRowComment = async(id,data,result) => {
+service.updatedRowComment = async(id,data,result,userId) => {
 
     result.data = await Comment.findOne({
         where:{
@@ -69,7 +69,9 @@ service.updatedRowComment = async(id,data,result) => {
         return ress.dataValues
     })
 
-    if(result.data.userId != data.userId){
+    if(result.data.userId != userId){
+        console.log("result",result.data.userId)
+        console.log("ini user",userId)
         throw new Error("Only User Who Comment Can Update This Comment!")
     }
 
@@ -77,7 +79,7 @@ service.updatedRowComment = async(id,data,result) => {
         where:{
             [Op.and]:[
                 {id:id},
-                {userId:data.userId}
+                {userId:userId}
             ]
         }
     })
@@ -103,7 +105,7 @@ service.deleteRowUser = async(id,result) => {
     return result
 }
 
-service.deleteRowPost = async(id,result) => {
+service.deleteRowPost = async(id,result,userId) => {
     result.data = await Post.findOne({
         where:{
             id
@@ -112,16 +114,23 @@ service.deleteRowPost = async(id,result) => {
         nest:true
     })
 
+    console.log(">><<",result.data)
+    if(result.data.authorId != userId) {
+        throw new Error("Just User Who Author this post can delete it")
+    }
+
     result.isExist = await Post.destroy({
         where:{
             id
         }
     })
 
+    // result.isExist = false
+
     return result
 }
 
-service.deleteRowComment = async(id,result) => {
+service.deleteRowComment = async(id,result,userId) => {
     result.data = await Comment.findOne({
         where:{
             id
@@ -129,6 +138,12 @@ service.deleteRowComment = async(id,result) => {
         raw:true,
         nest:true
     })
+
+    console.log(result)
+
+    if(result.data.userId != userId) {
+        throw new Error("Only User Who Comment this can delete")
+    }
 
     result.isExist = await Comment.destroy({
         where:{

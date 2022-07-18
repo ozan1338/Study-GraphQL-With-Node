@@ -2,12 +2,16 @@ let MutationComment = {}
 const {User,Comment,Post} = require("../../../models")
 const {Op} = require('sequelize')
 const helper = require("../../helper/index")
+const { getUserId } = require("../../utils/getUserId")
 
-MutationComment.createComment = async(parent, args, { db,pubsub }, info) => {
+MutationComment.createComment = async(parent, args, { req,db,pubsub }, info) => {
     // const UserExist = db.dummyDataUsers.some(item => item.id == args.data.author)
+
+    const userId = getUserId(req)
+
     const UserExist = await User.count({
         where:{
-            id:args.data.userId
+            id:userId
         }
     })
 
@@ -40,7 +44,7 @@ MutationComment.createComment = async(parent, args, { db,pubsub }, info) => {
 
     const data = {
         comment: args.data.comment,
-        userId: args.data.userId,
+        userId: userId,
         postId: args.data.postId
     }
 
@@ -60,9 +64,10 @@ MutationComment.createComment = async(parent, args, { db,pubsub }, info) => {
     return comment.dataValues
 }
 
-MutationComment.deleteComment = async (parent,args,{ db,pubsub },info) => {
+MutationComment.deleteComment = async (parent,args,{ req,db,pubsub },info) => {
     // const commentIndex = db.dummyDataComments.findIndex(item => item.id == args.commentId)
-    const deletedComment = await helper.deleteRow(args.commentId,"Comment")
+    const userId = getUserId(req)
+    const deletedComment = await helper.deleteRow(args.commentId,"Comment",userId)
     // console.log(deletedComment)
 
     if(deletedComment.isExist == 0) {
@@ -81,11 +86,13 @@ MutationComment.deleteComment = async (parent,args,{ db,pubsub },info) => {
     return deletedComment.data
 }
 
-MutationComment.updateComment = async(parent, args, { db, pubsub }, info) => {
+MutationComment.updateComment = async(parent, args, { req, db, pubsub }, info) => {
     const {commentId,data} = args
+    const userId = getUserId(req)
+    // console.log(userId)
 
-    const updatedComment = await helper.updatedRow(commentId,data,"Comment")
-    console.log(updatedComment)
+    const updatedComment = await helper.updatedRow(commentId,data,"Comment",userId)
+    // console.log(updatedComment)
 
     // const comment = db.dummyDataComments.find(item => item.id == commentId)
     // const comment = await Comment.findOne({

@@ -10,10 +10,10 @@ type Mutation {
     createUser(data: CreateUserInput): AuthPayload!
     createPost(data: CreatePostInput): Post!
     createComment(data: CreateCommentInput): Comment!
-    deleteUser(userId: ID!): User!
+    deleteUser: User!
     deletePost(postId: ID!): Post!
     deleteComment(commentId: ID!): Comment!
-    updateUser(userId: ID!, data:UpdateUserInput!): User!
+    updateUser(data:UpdateUserInput!): User!
     updatePost(postId: ID!, data:UpdatePostInput!): Post!
     updateComment(commentId: ID!, data:UpdateCommentInput!): Comment!
 }
@@ -46,24 +46,20 @@ input UpdatePostInput {
     title:String,
     body:String,
     published:Boolean,
-    authorId:ID!
 }
 
 input UpdateCommentInput {
-    comment:String,
-    userId:ID!
+    comment:String
 }
 
 input CreatePostInput {
     title:String!,
     body:String!,
-    published:Boolean!,
-    authorid:ID!
+    published:Boolean!
 }
 
 input CreateCommentInput {
     comment:String!,
-    userId:ID!,
     postId:ID!
 }
 

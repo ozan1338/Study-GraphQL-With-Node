@@ -33,7 +33,8 @@ const server = new GraphQLServer({
             req: request, 
             res: response, 
             userId: request.headers.userid,
-            db
+            db,
+            pubsub
         };
     }
 })

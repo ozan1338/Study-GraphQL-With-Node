@@ -1,13 +1,18 @@
 const {User,Comment,Post} = require("../../../models")
 const helpers = require('../../helper/index')
 let MutationPost = {}
+const {getUserId} = require('../../utils/getUserId')
 
-MutationPost.createPost = async(parent, args, { db, pubsub }, info) => {
+MutationPost.createPost = async(parent, args, {req, db, pubsub }, info) => {
     // const UserIdExist = db.dummyDataUsers.some(item => item.id == args.data.author)
+
+    // console.log(req.headers.authorization)
+    const userId = getUserId(req)
+    // console.log(userId)
 
     const UserIdExist = await User.findOne({
         where:{
-            id:args.data.author
+            id:userId
         }
     })
 
@@ -19,7 +24,7 @@ MutationPost.createPost = async(parent, args, { db, pubsub }, info) => {
         title: args.data.title,
         body: args.data.body,
         published: args.data.published,
-        authorId: args.data.author
+        authorId: userId
     }
 
     const result = await Post.create({...post,raw:true,nest:true})
@@ -37,10 +42,12 @@ MutationPost.createPost = async(parent, args, { db, pubsub }, info) => {
     return result.dataValues
 }
 
-MutationPost.deletePost = async (parent, args, { db,pubsub }, info) => {
+MutationPost.deletePost = async (parent, args, { db,pubsub,req }, info) => {
     // const postIndex = db.dummyDataPosts.findIndex(item => item.id == args.postId)
 
-    const result = await helpers.deleteRow(args.postId,'Post')
+    const userId = getUserId(req)
+
+    const result = await helpers.deleteRow(args.postId,'Post',userId)
 
     // console.log(result)
 
@@ -68,13 +75,14 @@ MutationPost.deletePost = async (parent, args, { db,pubsub }, info) => {
     return result.data
 }
 
-MutationPost.updatePost = async(parent, args, { db,pubsub }, info) => {
+MutationPost.updatePost = async(parent, args, { req,db,pubsub }, info) => {
     const {postId,data} = args
+    const userId = getUserId(req)
 
     // const post = db.dummyDataPosts.find(item => item.id == postId)
     // const originalPost = {...post}
 
-    const result = await helpers.updatedRow(postId,data,'Post')
+    const result = await helpers.updatedRow(postId,data,'Post',userId)
     // console.log(result)
 
     if(result.isExist == 0) {
@@ -103,6 +111,7 @@ MutationPost.updatePost = async(parent, args, { db,pubsub }, info) => {
                 })
     } else {
         console.log('updated')
+        // console.log(pubsub)
             pubsub.publish('post',{
                 post: {
                     mutation:"UPDATED",

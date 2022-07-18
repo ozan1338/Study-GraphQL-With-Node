@@ -3,6 +3,7 @@ const {User,Comment,Post} = require("../../../models")
 let MutationUser = {}
 let bcrypt = require("bcrypt")
 let jwt = require("jsonwebtoken")
+const { getUserId } = require('../../utils/getUserId')
 
 const deleteRow = async(id) => {
 
@@ -113,9 +114,10 @@ MutationUser.createUser = async (parent, args, { db }, info) => {
     }
 }
 
-MutationUser.deleteUser = async(parent, args, { db }, info) => {
+MutationUser.deleteUser = async(parent, args, { req,db }, info) => {
     // const userIndex = db.dummyDataUsers.findIndex(item => item.id == args.userId)
-    const result = await deleteRow(args.userId)
+    const userId = getUserId(req)
+    const result = await deleteRow(userId)
 
     // console.log(result)
 
@@ -126,8 +128,9 @@ MutationUser.deleteUser = async(parent, args, { db }, info) => {
     return result.data
 }
 
-MutationUser.updateUser = async(parent, args, { db }, info) => {
-    const {userId,data} = args
+MutationUser.updateUser = async(parent, args, { req,db }, info) => {
+    const {data} = args
+    const userId = getUserId(req)
     // console.log(data.name)
     // const user = db.dummyDataUsers.find(item => item.id == args.userId)
     const user = await updatedRow(userId,data)
