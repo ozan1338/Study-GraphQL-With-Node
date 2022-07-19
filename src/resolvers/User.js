@@ -1,4 +1,5 @@
-let {Post,Comment} = require("../../models/")
+let {Post,Comment,User} = require("../../models/")
+const { getUserId } = require("../utils/getUserId")
 
 module.exports = {
     async posts(parent, args, { db }, info) {
@@ -29,5 +30,17 @@ module.exports = {
         } catch (error) {
             console.log(error)
         }
+    },
+    async email(parent,args,ctx,info){
+        // console.log(parent.dataValues)
+        const userId = getUserId(ctx.req,false)
+        // console.log(userId)
+
+        if(parent.dataValues.id == userId) {
+            // console.log(parent.dataValues)
+            return parent.email
+        }
+
+        return null
     }
 }
