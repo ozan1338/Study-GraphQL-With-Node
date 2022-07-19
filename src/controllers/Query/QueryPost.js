@@ -9,11 +9,13 @@ QueryPost.posts  = async (parent,args,{ db,req },info) => {
         let order = []
         let finalQuery = {}
 
-        console.log(req.headers)
+        // console.log(req.headers)
         // console.log(db)
 
         if (args.query) {
-            where.title = args.query
+            where.title = {
+                [Op.like]: `%${args.query}%`
+            }
         }
         
 
@@ -23,10 +25,10 @@ QueryPost.posts  = async (parent,args,{ db,req },info) => {
         }
 
         // console.log("WHYY")
-
+        where.published = true
         finalQuery.where = where
         finalQuery.order = order
-        // console.log(finalQuery)
+        console.log(finalQuery)
 
         const result = await Post.findAll(finalQuery)
         // console.log(result)
@@ -35,6 +37,29 @@ QueryPost.posts  = async (parent,args,{ db,req },info) => {
     } catch (error) {
         console.log(error)
     }
+}
+
+QueryPost.myPost = async(parent,args,{ db,req },info) => {
+    const userId = getUserId(req)
+
+    let where = {}
+    let finalQuery = {}
+
+    if(args.query) {
+        where.title = {
+            [Op.like]: `%${args.query}%`
+        }
+    }
+
+    where.authorId = userId
+
+    finalQuery.where = where
+
+    console.log(finalQuery)
+
+    const result = await Post.findAll(finalQuery)
+
+    return result
 }
 
 QueryPost.post = async(parent,args,{ db,req },info) => {

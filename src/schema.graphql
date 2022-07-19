@@ -5,6 +5,7 @@ type Query {
     showHeader(headerName: String): String!
     post(postId: ID!): Post!
     me: User!
+    myPost(query: String): [Post!]!
 }
 
 type Mutation {
