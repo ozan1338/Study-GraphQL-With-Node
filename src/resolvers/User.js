@@ -8,7 +8,8 @@ module.exports = {
         try {
             let post = await Post.findAll({
                 where: {
-                    authorId:parent.id
+                    authorId:parent.id,
+                    published:true
                 }
             })
 
@@ -31,16 +32,21 @@ module.exports = {
             console.log(error)
         }
     },
-    async email(parent,args,ctx,info){
-        // console.log(parent.dataValues)
-        const userId = getUserId(ctx.req,false)
-        // console.log(userId)
-
-        if(parent.dataValues.id == userId) {
-            // console.log(parent.dataValues)
-            return parent.email
+    email:{
+        fragment: 'fragment userId on User { id }',
+        async resolve(parent,args,ctx,info){
+            // console.log(parent)
+            // console.log(this.fragment)
+            const userId = getUserId(ctx.req,false)
+            // console.log(userId2)
+    
+            if(parent.dataValues.id == userId) {
+                // console.log(parent.dataValues)
+                return parent.email
+            }
+    
+            return null
         }
 
-        return null
     }
 }

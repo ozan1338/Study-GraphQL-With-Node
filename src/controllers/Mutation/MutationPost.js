@@ -78,6 +78,7 @@ MutationPost.deletePost = async (parent, args, { db,pubsub,req }, info) => {
 MutationPost.updatePost = async(parent, args, { req,db,pubsub }, info) => {
     const {postId,data} = args
     const userId = getUserId(req)
+    console.log(userId)
 
     // const post = db.dummyDataPosts.find(item => item.id == postId)
     // const originalPost = {...post}
@@ -95,6 +96,7 @@ MutationPost.updatePost = async(parent, args, { req,db,pubsub }, info) => {
 
     if(!result.newValue.published && result.prevValue.published) {
         console.log('deleted')
+        await Comment.destroy({where:{postId:postId}})
                 pubsub.publish('post', {
                     post: {
                         mutation:'DELETED',
