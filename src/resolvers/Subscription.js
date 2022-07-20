@@ -1,5 +1,6 @@
 const {User,Comment,Post} = require("../../models/")
 const {Op} = require('sequelize')
+const {getUserId} = require("../utils/getUserId")
 
 
 module.exports = {
@@ -30,6 +31,20 @@ module.exports = {
     post: {
         subscribe(parent, args, {db,pubsub}, info) {
             return pubsub.asyncIterator('post')
+        }
+    },
+    myPost: {
+        async subscribe(parent,args,{req,db,pubsub,connection},info) {
+            // console.log(connection)
+            const userId = getUserId(connection,true,true)
+
+            // const myPost = await Post.findOne({
+            //     where:{
+            //         authorId:userId
+            //     }
+            // })
+
+            return pubsub.asyncIterator('myPost')
         }
     }
 }

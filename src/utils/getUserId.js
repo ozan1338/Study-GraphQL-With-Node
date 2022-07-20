@@ -1,7 +1,8 @@
 let jwt = require("jsonwebtoken")
 
-const getUserId = (req, requireAuth=true) => {
-    const header  =req.headers.authorization
+const getUserId = (req, requireAuth=true, subscription = false) => {
+    console.log(subscription)
+    const header  =subscription ? req.context.Authorization : req.headers.authorization
     // console.log(header)
     if(header) {
         const token = header.split(' ')

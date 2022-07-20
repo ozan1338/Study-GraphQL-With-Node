@@ -28,11 +28,11 @@ const server = new GraphQLServer({
         Post,
         Comment
     },
-    context: ({ request, response, ...rest }) => {
+    context: ({ request, response, connection, ...rest }) => {
         return { 
             req: request, 
-            res: response, 
-            userId: request.headers.userid,
+            res: response,
+            connection,
             db,
             pubsub
         };

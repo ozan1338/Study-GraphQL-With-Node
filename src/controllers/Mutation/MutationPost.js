@@ -97,29 +97,30 @@ MutationPost.updatePost = async(parent, args, { req,db,pubsub }, info) => {
     if(!result.newValue.published && result.prevValue.published) {
         console.log('deleted')
         await Comment.destroy({where:{postId:postId}})
-                pubsub.publish('post', {
-                    post: {
-                        mutation:'DELETED',
-                        data: result.prevValue
-                    }
-                })
+        pubsub.publish('myPost',{
+            myPost: {
+                mutation:"DELETED",
+                data: result.newValue
+            }
+        })
     } else if(result.newValue.published && !result.prevValue.published){
         console.log('created')
-                pubsub.publish('post', {
-                    post: {
-                        mutation: "CREATED",
-                        data:result.newValue
-                    }
-                })
+        pubsub.publish('myPost',{
+            myPost: {
+                mutation:"CREATED",
+                data: result.newValue
+            }
+        })
     } else {
         console.log('updated')
         // console.log(pubsub)
-            pubsub.publish('post',{
-                post: {
-                    mutation:"UPDATED",
-                    data: result.newValue
-                }
-            })
+        console.log(result.newValue)
+        pubsub.publish('myPost',{
+            myPost: {
+                mutation:"UPDATED",
+                data: result.newValue
+            }
+        })
     }
 
     return result.newValue
