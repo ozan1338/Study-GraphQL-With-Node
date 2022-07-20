@@ -4,6 +4,8 @@ let MutationUser = {}
 let bcrypt = require("bcrypt")
 let jwt = require("jsonwebtoken")
 const { getUserId } = require('../../utils/getUserId')
+const { generatedToken } = require('../../utils/generatedToken')
+const { hashPassword } = require('../../utils/hashPassword')
 
 const deleteRow = async(id) => {
 
@@ -67,7 +69,8 @@ MutationUser.login = async(parent, args, context, info) => {
         throw new Error("Password not match")
     }
 
-    const token = jwt.sign({userId: user.dataValues.id}, process.env.SECRET)
+    // const token = jwt.sign({userId: user.dataValues.id}, process.env.SECRET)
+    const token = generatedToken(user.dataValues.id)
 
     return {
         user,
@@ -88,11 +91,7 @@ MutationUser.createUser = async (parent, args, { db }, info) => {
         throw new Error('Email Exist')
     }
 
-    if(args.data.password.length < 4) {
-        throw new Error('Password must be 4 character or longer')
-    }
-
-    let password = await bcrypt.hash(args.data.password, 10)
+    let password = await hashPassword(args.data.password)
 
     const user = {
         name: args.data.name,
@@ -106,7 +105,9 @@ MutationUser.createUser = async (parent, args, { db }, info) => {
 
     // console.log(result.dataValues)
 
-    const token = jwt.sign({userId: result.dataValues.id}, process.env.SECRET)
+    // const token = jwt.sign({userId: result.dataValues.id}, process.env.SECRET)
+    // console.log(result)
+    const token = generatedToken(result.dataValues.id)
     
     return {
         user: result.dataValues,
@@ -131,11 +132,15 @@ MutationUser.deleteUser = async(parent, args, { req,db }, info) => {
 MutationUser.updateUser = async(parent, args, { req,db }, info) => {
     const {data} = args
     const userId = getUserId(req)
+
+    if(typeof args.data.password == 'string') {
+        args.data.password = await hashPassword(args.data.password)
+    }
     // console.log(data.name)
     // const user = db.dummyDataUsers.find(item => item.id == args.userId)
     const user = await updatedRow(userId,data)
 
-    console.log(user)
+    // console.log(user)
 
     if (user.isExist == 0) {
         throw new Error("User not found")
